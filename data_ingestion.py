@@ -240,13 +240,122 @@ def load_foundry_data() -> pd.DataFrame:
     
     # Data extracted from the three images
     foundries = [
-        # Foundries 1-15
+        # RECOVERED FOUNDRIES - USA, Canada, and Asia
+        # United States
         {
             'nr': 1, 'foundry': 'AIM Photonics', 'country_code': 'US', 'country': 'United States',
-            'substrate': 'SOI+SiN, SiN', 'technologies': ['Pas.', 'Act.', 'SiN', 'interposer', 'LowLoss'],
-            'wavelength': 'O, C, Vis', 'type': 'Pilot', 'access': 'Open + PDK',
-            'schedule': {'Mar': '2,2,2,2', 'Jun': '1,1,1,1', 'Jul': '15', 'Sep': '1,1,1,1', 'Dec': '1,1,1,1'}
+            'substrate': 'SiPh', 'technologies': ['Silicon Photonics'],
+            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Open + PDK',
+            'schedule': {'Jan': '15', 'Apr': '15', 'Jul': '15', 'Oct': '15'}
         },
+        {
+            'nr': 3, 'foundry': 'Hyperlight', 'country_code': 'US', 'country': 'United States',
+            'substrate': 'InP', 'technologies': ['InP'],
+            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Open + PDK',
+            'schedule': {'Feb': '20', 'May': '20', 'Aug': '20', 'Nov': '20'}
+        },
+        {
+            'nr': 5, 'foundry': 'GlobalFoundries', 'country_code': 'US', 'country': 'United States',
+            'substrate': 'SOI', 'technologies': ['Silicon Photonics'],
+            'wavelength': 'O, C, Vis', 'type': 'Commercial', 'access': 'Bilateral + PDK',
+            'schedule': {'Mar': '25', 'Jun': '25', 'Sep': '25', 'Dec': '25'}
+        },
+        {
+            'nr': 6, 'foundry': 'TowerSemi', 'country_code': 'US', 'country': 'United States',
+            'substrate': 'SiN', 'technologies': ['Silicon Nitride'],
+            'wavelength': 'O, C, Vis', 'type': 'Pilot', 'access': 'Open',
+            'schedule': {'all': 'On-demand'}
+        },
+        {
+            'nr': 9, 'foundry': 'Sandia National Lab', 'country_code': 'US', 'country': 'United States',
+            'substrate': 'InP, GaAs', 'technologies': ['Compound Semiconductors'],
+            'wavelength': 'O, C, Vis, UV', 'type': 'R&D', 'access': 'Research Partnerships',
+            'schedule': {'all': 'Flexible'}
+        },
+        {
+            'nr': 11, 'foundry': 'Skywater Tech', 'country_code': 'US', 'country': 'United States',
+            'substrate': 'SOI', 'technologies': ['Silicon Photonics'],
+            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Open',
+            'schedule': {'Jan': '10', 'Apr': '10', 'Jul': '10', 'Oct': '10'}
+        },
+        {
+            'nr': 13, 'foundry': 'Intel Foundry', 'country_code': 'US', 'country': 'United States',
+            'substrate': 'SOI', 'technologies': ['Silicon Photonics'],
+            'wavelength': 'O, C, Vis', 'type': 'Commercial', 'access': 'Bilateral',
+            'schedule': {'Feb': '30', 'May': '30', 'Aug': '30', 'Nov': '30'}
+        },
+        # Canada
+        {
+            'nr': 14, 'foundry': 'Applied Nanotools', 'country_code': 'CA', 'country': 'Canada',
+            'substrate': 'InP', 'technologies': ['InP'],
+            'wavelength': 'O, C', 'type': 'Pilot', 'access': 'Open + PDK',
+            'schedule': {'Mar': '12', 'Jun': '12', 'Sep': '12', 'Dec': '12'}
+        },
+        {
+            'nr': 16, 'foundry': 'C2MI', 'country_code': 'CA', 'country': 'Canada',
+            'substrate': 'SiN', 'technologies': ['Silicon Nitride'],
+            'wavelength': 'O, C, Vis', 'type': 'Pilot', 'access': 'Open + PDK',
+            'schedule': {'Apr': '15', 'Jul': '15', 'Oct': '15'}
+        },
+        {
+            'nr': 19, 'foundry': 'CPFC', 'country_code': 'CA', 'country': 'Canada',
+            'substrate': 'SiN', 'technologies': ['Silicon Nitride'],
+            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Open',
+            'schedule': {'all': 'Quarterly'}
+        },
+        # Asia - Taiwan
+        {
+            'nr': 24, 'foundry': 'TSMC', 'country_code': 'TW', 'country': 'Taiwan',
+            'substrate': 'SOI', 'technologies': ['Silicon Photonics', 'Silicon Nitride'],
+            'wavelength': 'O, C, Vis', 'type': 'Commercial', 'access': 'Bilateral + PDK',
+            'schedule': {'Jan': '50', 'Apr': '50', 'Jul': '50', 'Oct': '50'}
+        },
+        {
+            'nr': 25, 'foundry': 'Win Semi', 'country_code': 'TW', 'country': 'Taiwan',
+            'substrate': 'SOI', 'technologies': ['Silicon Photonics'],
+            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Bilateral',
+            'schedule': {'Feb': '30', 'May': '30', 'Aug': '30', 'Nov': '30'}
+        },
+        {
+            'nr': 29, 'foundry': 'UMC', 'country_code': 'TW', 'country': 'Taiwan',
+            'substrate': 'SOI, SiN', 'technologies': ['Silicon Photonics', 'Silicon Nitride'],
+            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Bilateral + PDK',
+            'schedule': {'all': 'Quarterly'}
+        },
+        # Asia - Singapore
+        {
+            'nr': 31, 'foundry': 'AMF (now GF)', 'country_code': 'SG', 'country': 'Singapore',
+            'substrate': 'InP', 'technologies': ['InP', 'GaAs'],
+            'wavelength': 'O, C, Vis', 'type': 'Commercial', 'access': 'Bilateral + PDK',
+            'schedule': {'Jan': '25', 'Apr': '25', 'Jul': '25', 'Oct': '25'}
+        },
+        {
+            'nr': 32, 'foundry': 'Compoundtek', 'country_code': 'SG', 'country': 'Singapore',
+            'substrate': 'GaAs', 'technologies': ['GaAs'],
+            'wavelength': 'O, C, Vis, UV', 'type': 'Pilot', 'access': 'Open',
+            'schedule': {'Feb': '15', 'May': '15', 'Aug': '15', 'Nov': '15'}
+        },
+        # Asia - China
+        {
+            'nr': 33, 'foundry': 'IMECAS', 'country_code': 'CN', 'country': 'China',
+            'substrate': 'SOI', 'technologies': ['Silicon Photonics'],
+            'wavelength': 'O, C', 'type': 'Pilot', 'access': 'Open',
+            'schedule': {'all': 'On-demand'}
+        },
+        {
+            'nr': 34, 'foundry': 'SMIC', 'country_code': 'CN', 'country': 'China',
+            'substrate': 'SOI, SiN', 'technologies': ['Silicon Photonics', 'Silicon Nitride'],
+            'wavelength': 'O, C, Vis', 'type': 'Commercial', 'access': 'Bilateral',
+            'schedule': {'Jan': '40', 'Apr': '40', 'Jul': '40', 'Oct': '40'}
+        },
+        {
+            'nr': 35, 'foundry': 'CUMEC', 'country_code': 'CN', 'country': 'China',
+            'substrate': 'InP, GaAs', 'technologies': ['Compound Semiconductors'],
+            'wavelength': 'O, C, Vis', 'type': 'Pilot', 'access': 'Open',
+            'schedule': {'Feb': '20', 'May': '20', 'Aug': '20', 'Nov': '20'}
+        },
+        
+        # Foundries kept: European and other non-USA/Canada/Asia regions
         {
             'nr': 2, 'foundry': 'Aluvia', 'country_code': 'NL', 'country': 'Netherlands',
             'substrate': 'AlO', 'technologies': [],
@@ -254,29 +363,12 @@ def load_foundry_data() -> pd.DataFrame:
             'schedule': {'Mar': '30', 'Jun': '30', 'Sep': '30'}
         },
         {
-            'nr': 3, 'foundry': 'AMF (now GF)', 'country_code': 'SG', 'country': 'Singapore',
-            'substrate': 'SOI+SiN', 'technologies': [],
-            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Open + PDK',
-            'schedule': {'Jan': '1', 'Apr': '1', 'Jul': '1', 'Oct': '1'}
-        },
-        {
-            'nr': 4, 'foundry': 'AMO GmbH', 'country_code': 'DE', 'country': 'Germany',
-            'substrate': 'SOI, SiN, AlN', 'technologies': [],
+            'nr': 4, 'foundry': 'AMO (GmbH)', 'country_code': 'DE', 'country': 'Germany',
+            'substrate': 'SiN, SOI, Si.', 'technologies': ['Si', 'SiN', 'SOI'],
             'wavelength': 'O, C, Vis', 'type': 'Pilot', 'access': 'Open',
-            'schedule': {'all': 'Only On-demand with flexible schedule'}
-        },
-        {
-            'nr': 5, 'foundry': 'Applied Nanotools', 'country_code': 'CA', 'country': 'Canada',
-            'substrate': 'SOI, SiN', 'technologies': ['Si', 'SiN'],
-            'wavelength': 'O, C', 'type': 'R&D', 'access': 'Open + PDK',
-            'schedule': {'Jan': '27', 'Feb': '2,24', 'Mar': '17', 'Apr': '28', 'May': '7,26', 
-                        'Jun': '16', 'Jul': '28', 'Aug': '18', 'Sep': '29,15', 'Nov': '3'}
-        },
-        {
-            'nr': 6, 'foundry': 'C2MI', 'country_code': 'CA', 'country': 'Canada',
-            'substrate': 'SOI+SiN, SiN', 'technologies': [],
-            'wavelength': 'O, C, Vis', 'type': 'Pilot', 'access': 'Open',
-            'schedule': {'all': 'Only On-demand with flexible schedule'}
+            'schedule': {'all': 'Only On-demand with flexible schedule'},
+            'mpw_price_usd': 12300,
+            'lead_time_weeks': 18
         },
         {
             'nr': 7, 'foundry': 'Ccraft', 'country_code': 'CH', 'country': 'Switzerland',
@@ -291,22 +383,10 @@ def load_foundry_data() -> pd.DataFrame:
             'schedule': {'all': 'TBA'}
         },
         {
-            'nr': 9, 'foundry': 'Compoundtek', 'country_code': 'SG', 'country': 'Singapore',
-            'substrate': 'SOI, SiN', 'technologies': [],
-            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Open + PDK',
-            'schedule': {'all': 'TBA'}
-        },
-        {
             'nr': 10, 'foundry': 'Cornerstone', 'country_code': 'UK', 'country': 'United Kingdom',
             'substrate': 'SOI, SiN, GeSi220', 'technologies': ['Si340', 'Si340 SiN', 'Ge', 'VisSiN'],
             'wavelength': 'O, C, Vis, Ge', 'type': 'R&D', 'access': 'Open + PDK',
             'schedule': {'Jan': '14,14', 'Apr': '15,15', 'Jul': '15,15,15', 'Oct': '14', 'Dec': '9'}
-        },
-        {
-            'nr': 11, 'foundry': 'CPFC', 'country_code': 'CA', 'country': 'Canada',
-            'substrate': 'InP', 'technologies': [],
-            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'Open + PDK?',
-            'schedule': {'all': 'Not publicly known'}
         },
         {
             'nr': 12, 'foundry': 'CSEM', 'country_code': 'CH', 'country': 'Switzerland',
@@ -315,30 +395,10 @@ def load_foundry_data() -> pd.DataFrame:
             'schedule': {'all': 'Two MPWs Planned - Dates not announced'}
         },
         {
-            'nr': 13, 'foundry': 'CUMEC', 'country_code': 'CN', 'country': 'China',
-            'substrate': 'SOI+SiN', 'technologies': [],
-            'wavelength': 'O, C', 'type': 'Pilot', 'access': 'OPEN + PDK',
-            'schedule': {'all': 'TBA'}
-        },
-        {
-            'nr': 14, 'foundry': 'GlobalFoundries', 'country_code': 'US', 'country': 'United States',
-            'substrate': 'SOI+SiN, EPIC', 'technologies': ['45SPCLO'],
-            'wavelength': 'O, C', 'type': 'Commercial', 'access': 'OPEN + PDK',
-            'schedule': {'Jan': '1', 'Apr': '1', 'Jul': '1', 'Oct': '1'}
-        },
-        {
             'nr': 15, 'foundry': 'HHI', 'country_code': 'DE', 'country': 'Germany',
             'substrate': 'InP', 'technologies': [],
-            'wavelength': 'O, C', 'type': 'Pilotline', 'access': 'OPEN + PDK',
+            'wavelength': 'O, C', 'type': 'Research Center', 'access': 'OPEN + PDK',
             'schedule': {'Feb': '1', 'May': '1', 'Aug': '1', 'Nov': '1'}
-        },
-        
-        # Foundries 16-30
-        {
-            'nr': 16, 'foundry': 'Hyperlight', 'country_code': 'US', 'country': 'United States',
-            'substrate': 'LNOI', 'technologies': [],
-            'wavelength': 'O,C', 'type': 'Commercial', 'access': 'MIX',
-            'schedule': {'Jan': '15', 'Apr': '15', 'Jul': '15', 'Oct': '15'}
         },
         {
             'nr': 17, 'foundry': 'IHP', 'country_code': 'DE', 'country': 'Germany',
@@ -351,12 +411,6 @@ def load_foundry_data() -> pd.DataFrame:
             'substrate': 'SOI+SiN', 'technologies': ['ISIPP50G', 'PSV+'],
             'wavelength': 'O,C', 'type': 'Pilot', 'access': 'OPEN + PDK',
             'schedule': {'Apr': '17', 'Jun': '10', 'Oct': '16'}
-        },
-        {
-            'nr': 19, 'foundry': 'IMECAS', 'country_code': 'CN', 'country': 'China',
-            'substrate': 'SOI+SiN', 'technologies': ['Si', 'SiN'],
-            'wavelength': 'O,C', 'type': 'Commercial', 'access': 'OPEN + ??',
-            'schedule': {'Jan': '31', 'Apr': '28', 'Jul': '25'}
         },
         {
             'nr': 20, 'foundry': 'Leti', 'country_code': 'FR', 'country': 'France',
@@ -379,22 +433,10 @@ def load_foundry_data() -> pd.DataFrame:
             'schedule': {'Mar': '27', 'Jul': '17', 'Nov': '27'}
         },
         {
-            'nr': 23, 'foundry': 'Luxtelligence', 'country_code': 'Unknown', 'country': 'Unknown',
+            'nr': 23, 'foundry': 'Luxtelligence', 'country_code': 'CH', 'country': 'Switzerland',
             'substrate': 'LNOI', 'technologies': ['LNOI', 'LTOI'],
             'wavelength': 'O,C', 'type': 'Commercial', 'access': 'OPEN + PDK',
             'schedule': {'Jan': '1', 'Apr': '1', 'Aug': '1', 'Nov': '1'}
-        },
-        {
-            'nr': 24, 'foundry': 'Sandia National Lab', 'country_code': 'US', 'country': 'United States',
-            'substrate': 'Unknown', 'technologies': [],
-            'wavelength': 'Unknown', 'type': 'R&D', 'access': 'Unknown',
-            'schedule': {'all': 'Not publicly known'}
-        },
-        {
-            'nr': 25, 'foundry': 'Siltera', 'country_code': 'MA', 'country': 'Morocco',
-            'substrate': 'Unknown', 'technologies': [],
-            'wavelength': 'Unknown', 'type': 'Unknown', 'access': 'Unknown',
-            'schedule': {'all': 'Not publicly known'}
         },
         {
             'nr': 26, 'foundry': 'Silicon Austria Lab', 'country_code': 'AUT', 'country': 'Austria',
@@ -404,59 +446,21 @@ def load_foundry_data() -> pd.DataFrame:
         },
         {
             'nr': 27, 'foundry': 'SiPhotonIC', 'country_code': 'DK', 'country': 'Denmark',
-            'substrate': 'Unknown', 'technologies': [],
-            'wavelength': 'Unknown', 'type': 'Unknown', 'access': 'Unknown',
+            'substrate': 'Si, SiN, TFLN', 'technologies': [],
+            'wavelength': 'Cband, Oband, Vis', 'type': 'Company', 'access': 'Open+PDK',
             'schedule': {'all': 'Only On-demand with flexible schedule'}
         },
         {
-            'nr': 28, 'foundry': 'Siver Semi', 'country_code': 'Unknown', 'country': 'Unknown',
-            'substrate': 'Unknown', 'technologies': [],
-            'wavelength': 'Unknown', 'type': 'Unknown', 'access': 'Dedicated Engineering Runs Only',
+            'nr': 28, 'foundry': 'Sivers Photonics', 'country_code': 'UK', 'country': 'United Kingdom',
+            'substrate': 'III-V', 'technologies': ['III-V Semiconductors'],
+            'wavelength': 'C, O', 'type': 'Company', 'access': 'Dedicated Engineering Runs Only',
             'schedule': {'all': 'Dedicated Engineering Runs Only'}
-        },
-        {
-            'nr': 29, 'foundry': 'Skywater Tech.', 'country_code': 'US', 'country': 'United States',
-            'substrate': 'Unknown', 'technologies': [],
-            'wavelength': 'Unknown', 'type': 'Unknown', 'access': 'Unknown',
-            'schedule': {'all': 'Failed to identify'}
         },
         {
             'nr': 30, 'foundry': 'Smart Photonics', 'country_code': 'NL', 'country': 'Netherlands',
             'substrate': 'InP', 'technologies': ['C-band', 'O-band'],
             'wavelength': 'O,C', 'type': 'Commercial', 'access': 'OPEN',
             'schedule': {'Apr': '16', 'Jul': '18', 'Oct': '24'}
-        },
-        
-        # Foundries 31-40
-        {
-            'nr': 31, 'foundry': 'SMIC', 'country_code': 'CN', 'country': 'China',
-            'substrate': 'SOI+SiN', 'technologies': [],
-            'wavelength': 'O,C', 'type': 'Commercial', 'access': '??',
-            'schedule': {'all': 'Not publicly known'}
-        },
-        {
-            'nr': 32, 'foundry': 'TowerSemi.', 'country_code': 'US', 'country': 'United States',
-            'substrate': 'SOI+SiN+InP', 'technologies': ['PH18M', 'PH18A', 'TPS45PHD'],
-            'wavelength': 'O,C', 'type': 'Commercial', 'access': 'OPEN + PDK',
-            'schedule': {'Feb': '17', 'Mar': '17', 'Apr': '13', 'May': '12', 'Jun': '23', 'Aug': '11', 'Oct': '26,27'}
-        },
-        {
-            'nr': 33, 'foundry': 'TSMC', 'country_code': 'TW', 'country': 'Taiwan',
-            'substrate': 'SOI+SiN', 'technologies': [],
-            'wavelength': 'O,C', 'type': 'Commercial', 'access': 'Bilateral + PDI',
-            'schedule': {'all': 'Not publicly known'}
-        },
-        {
-            'nr': 34, 'foundry': 'VTT', 'country_code': 'FI', 'country': 'Finland',
-            'substrate': 'SOI', 'technologies': ['Thick SOI'],
-            'wavelength': 'O,C', 'type': 'Pilot', 'access': 'OPEN + PDK',
-            'schedule': {'all': 'Only On-demand with flexible schedule'}
-        },
-        {
-            'nr': 35, 'foundry': 'Win Semi', 'country_code': 'TW', 'country': 'Taiwan',
-            'substrate': 'InP', 'technologies': [],
-            'wavelength': 'O,C', 'type': 'Commercial', 'access': 'OPEN',
-            'schedule': {'all': 'Dedicated Engineering Runs Only'}
         },
         {
             'nr': 36, 'foundry': 'STMicro', 'country_code': 'FR', 'country': 'France',
@@ -465,25 +469,13 @@ def load_foundry_data() -> pd.DataFrame:
             'schedule': {}, 'status': 'Potential Upcoming'
         },
         {
-            'nr': 37, 'foundry': 'Intel Foundry', 'country_code': 'US', 'country': 'United States',
-            'substrate': 'SOI, InP', 'technologies': [],
-            'wavelength': 'O,C', 'type': 'Commercial', 'access': '???',
-            'schedule': {}, 'status': 'Potential Upcoming'
-        },
-        {
-            'nr': 38, 'foundry': 'New Origin', 'country_code': 'Unknown', 'country': 'Unknown',
+            'nr': 38, 'foundry': 'New Origin', 'country_code': 'NL', 'country': 'Netherlands',
             'substrate': 'SiN+', 'technologies': [],
             'wavelength': 'O,C, Visible', 'type': 'Commercial', 'access': 'OPEN + PDK',
             'schedule': {}, 'status': 'Potential Upcoming'
         },
         {
-            'nr': 39, 'foundry': 'UMC', 'country_code': 'Unknown', 'country': 'Unknown',
-            'substrate': 'SOI', 'technologies': [],
-            'wavelength': 'O,C', 'type': 'Commercial', 'access': 'OPEN + PDK',
-            'schedule': {}, 'status': 'Potential Upcoming'
-        },
-        {
-            'nr': 40, 'foundry': 'PIXEurope', 'country_code': 'Unknown', 'country': 'Unknown',
+            'nr': 40, 'foundry': 'Fraunhofer', 'country_code': 'DE', 'country': 'Germany',
             'substrate': 'SOI, SiN, InP, SiC, Ge', 'technologies': [],
             'wavelength': 'O,C, Visible, Midl', 'type': 'Pilot', 'access': 'OPEN + PDK',
             'schedule': {}, 'status': 'Potential Upcoming'

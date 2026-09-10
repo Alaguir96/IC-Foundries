@@ -9,168 +9,190 @@ import pandas as pd
 from typing import List, Dict
 
 
+def _friendly_tech_label(tech: str) -> str:
+    """Shorten technical category names for the UI."""
+    mapping = {
+        'SiPh (Silicon Photonics)': 'Silicon Photonics',
+        'LN (Lithium Niobate)': 'Lithium Niobate',
+        'SiN (Silicon Nitride)': 'Silicon Nitride',
+        'Hybrid/Multi-platform': 'Hybrid / Multi-platform',
+    }
+    return mapping.get(tech, tech)
+
+
 def create_sidebar(df: pd.DataFrame) -> html.Div:
     """
     Create the sidebar with filters and controls.
     """
-    # Get unique values for filters
     countries = sorted(df['country'].unique())
     tech_categories = sorted(df['tech_category'].unique())
     types = sorted(df['type'].unique())
-    applications = sorted(set([app for apps in df['applications'].str.split(', ') 
-                               for app in apps if app]))
-    
+    applications = sorted(set([
+        app for apps in df['applications'].str.split(', ')
+        for app in apps if app
+    ]))
+
     sidebar = html.Div([
-        html.H4("Filters", className="sidebar-header"),
-        html.Hr(className="sidebar-divider"),
-        
-        # Search bar
         html.Div([
-            html.Label("Search Foundries", className="filter-label"),
+            html.P("Explore", className="sidebar-kicker"),
+            html.H4("Find a foundry", className="sidebar-header"),
+            html.P(
+                "Filter the map by location, technology, and readiness.",
+                className="sidebar-lead",
+            ),
+        ], className="sidebar-intro"),
+
+        html.Div([
+            html.Label("Search", className="filter-label"),
             dcc.Input(
                 id='search-input',
                 type='text',
-                placeholder='Type to search...',
+                placeholder='Search by foundry name…',
                 className='search-input',
                 debounce=True,
             ),
         ], className="filter-section"),
-        
-        # Country filter
+
         html.Div([
-            html.Label("Country / Region", className="filter-label"),
+            html.Label("Location", className="filter-label"),
             dcc.Dropdown(
                 id='country-filter',
                 options=[{'label': country, 'value': country} for country in countries],
                 multi=True,
-                placeholder='Select countries...',
+                placeholder='All countries',
                 className='filter-dropdown',
             ),
         ], className="filter-section"),
-        
-        # Technology filter
+
         html.Div([
-            html.Label("Technology Category", className="filter-label"),
+            html.Label("Technology", className="filter-label"),
             dcc.Dropdown(
                 id='tech-filter',
-                options=[{'label': tech, 'value': tech} for tech in tech_categories],
+                options=[
+                    {'label': _friendly_tech_label(tech), 'value': tech}
+                    for tech in tech_categories
+                ],
                 multi=True,
-                placeholder='Select technologies...',
+                placeholder='All platforms',
                 className='filter-dropdown',
             ),
         ], className="filter-section"),
-        
-        # Type filter
+
         html.Div([
-            html.Label("Production Maturity", className="filter-label"),
+            html.Label("Maturity", className="filter-label"),
             dcc.Checklist(
                 id='type-filter',
                 options=[{'label': t, 'value': t} for t in types],
-                value=types,  # All selected by default
+                value=types,
                 className='filter-checklist',
+                inputClassName='filter-check-input',
+                labelClassName='filter-check-label',
             ),
         ], className="filter-section"),
-        
-        # Application filter
+
         html.Div([
-            html.Label("Application Domain", className="filter-label"),
+            html.Label("Applications", className="filter-label"),
             dcc.Checklist(
                 id='application-filter',
                 options=[{'label': app, 'value': app} for app in applications],
-                value=applications,  # All selected by default
+                value=applications,
                 className='filter-checklist',
+                inputClassName='filter-check-input',
+                labelClassName='filter-check-label',
             ),
         ], className="filter-section"),
-        
-        # Price range filter
+
+        html.Details([
+            html.Summary("More filters & display", className="advanced-summary"),
+            html.Div([
+                html.Div([
+                    html.Label("Budget range (USD)", className="filter-label"),
+                    dcc.RangeSlider(
+                        id='price-range-filter',
+                        min=0,
+                        max=50000,
+                        step=1000,
+                        marks={0: '$0', 25000: '$25K', 50000: '$50K+'},
+                        value=[0, 50000],
+                        tooltip={"placement": "bottom", "always_visible": False},
+                        className="filter-slider",
+                    ),
+                ], className="filter-section"),
+
+                html.Div([
+                    html.Label("Maximum lead time", className="filter-label"),
+                    dcc.Slider(
+                        id='lead-time-filter',
+                        min=0,
+                        max=30,
+                        step=2,
+                        marks={0: 'Any', 15: '15 wks', 30: '30+'},
+                        value=30,
+                        tooltip={"placement": "bottom", "always_visible": False},
+                        className="filter-slider",
+                    ),
+                ], className="filter-section"),
+
+                html.Div([
+                    html.Label("Colour markers by", className="filter-label"),
+                    dcc.RadioItems(
+                        id='color-by',
+                        options=[
+                            {'label': 'Maturity', 'value': 'type'},
+                            {'label': 'Technology', 'value': 'tech_category'},
+                            {'label': 'Access', 'value': 'access'},
+                        ],
+                        value='type',
+                        className='filter-radio',
+                        inputClassName='filter-radio-input',
+                        labelClassName='filter-radio-label',
+                    ),
+                ], className="filter-section"),
+
+                html.Div([
+                    html.Label("Size markers by", className="filter-label"),
+                    dcc.RadioItems(
+                        id='size-by',
+                        options=[
+                            {'label': 'Maturity', 'value': 'type'},
+                            {'label': 'Technology breadth', 'value': 'tech_category'},
+                            {'label': 'Price', 'value': 'price'},
+                        ],
+                        value='type',
+                        className='filter-radio',
+                        inputClassName='filter-radio-input',
+                        labelClassName='filter-radio-label',
+                    ),
+                ], className="filter-section"),
+
+                html.Div([
+                    dbc.Checklist(
+                        id='heatmap-toggle',
+                        options=[{'label': 'Show density overlay', 'value': 'show'}],
+                        value=[],
+                        className='filter-checklist',
+                    ),
+                ], className="filter-section"),
+            ], className="advanced-body"),
+        ], className="advanced-panel"),
+
         html.Div([
-            html.Label("MPW Price Range (USD)", className="filter-label"),
-            dcc.RangeSlider(
-                id='price-range-filter',
-                min=0,
-                max=50000,
-                step=1000,
-                marks={0: '$0', 10000: '$10K', 20000: '$20K', 30000: '$30K', 40000: '$40K', 50000: '$50K+'},
-                value=[0, 50000],
-                tooltip={"placement": "bottom", "always_visible": False},
-            ),
-        ], className="filter-section"),
-        
-        # Lead time filter
-        html.Div([
-            html.Label("Max Lead Time (weeks)", className="filter-label"),
-            dcc.Slider(
-                id='lead-time-filter',
-                min=0,
-                max=30,
-                step=2,
-                marks={0: '0', 10: '10', 20: '20', 30: '30+'},
-                value=30,
-                tooltip={"placement": "bottom", "always_visible": False},
-            ),
-        ], className="filter-section"),
-        
-        # Color by selector
-        html.Div([
-            html.Label("Color By", className="filter-label"),
-            dcc.RadioItems(
-                id='color-by',
-                options=[
-                    {'label': 'Type', 'value': 'type'},
-                    {'label': 'Technology', 'value': 'tech_category'},
-                    {'label': 'Access Model', 'value': 'access'},
-                ],
-                value='type',
-                className='filter-radio',
-            ),
-        ], className="filter-section"),
-        
-        # Size by selector
-        html.Div([
-            html.Label("Size By", className="filter-label"),
-            dcc.RadioItems(
-                id='size-by',
-                options=[
-                    {'label': 'Type', 'value': 'type'},
-                    {'label': 'Technology Count', 'value': 'tech_category'},
-                    {'label': 'MPW Price', 'value': 'price'},
-                ],
-                value='type',
-                className='filter-radio',
-            ),
-        ], className="filter-section"),
-        
-        # Heatmap toggle
-        html.Div([
-            dbc.Checklist(
-                id='heatmap-toggle',
-                options=[{'label': 'Show Density Heatmap', 'value': 'show'}],
-                value=[],
-                className='filter-checklist',
-            ),
-        ], className="filter-section"),
-        
-        html.Hr(className="sidebar-divider"),
-        
-        # Statistics
-        html.Div([
-            html.H5("Statistics", className="stats-header"),
+            html.P("At a glance", className="stats-header"),
             html.Div(id='stats-display', className="stats-display"),
-        ], className="filter-section"),
-        
-        # Export button
+        ], className="stats-panel"),
+
         html.Div([
             dbc.Button(
-                "Export to CSV",
+                "Download results",
                 id='export-btn',
                 color='primary',
                 className='export-button',
                 n_clicks=0,
             ),
-        ], className="filter-section"),
-        
+        ], className="filter-section export-section"),
+
     ])
-    
+
     return sidebar
 
 
@@ -179,9 +201,8 @@ def create_foundry_popup(foundry_data: pd.Series) -> html.Div:
     Create a detailed popup panel for a selected foundry.
     """
     technologies = ', '.join(foundry_data['technologies']) if foundry_data['technologies'] else 'N/A'
-    
-    # Parse schedule
-    schedule_str = "N/A"
+
+    schedule_str = "On request"
     if isinstance(foundry_data.get('schedule'), dict):
         schedule_items = []
         for month, value in foundry_data['schedule'].items():
@@ -191,42 +212,44 @@ def create_foundry_popup(foundry_data: pd.Series) -> html.Div:
             schedule_str = "; ".join(schedule_items)
         elif 'all' in foundry_data['schedule']:
             schedule_str = foundry_data['schedule']['all']
-    
+
     popup = dbc.Modal([
         dbc.ModalHeader(dbc.ModalTitle(foundry_data['foundry'])),
         dbc.ModalBody([
             html.Div([
-                html.H6("Location", className="popup-section-header"),
-                html.P(f"Country: {foundry_data['country']} ({foundry_data['country_code']})"),
-                html.P(f"Coordinates: {foundry_data['latitude']:.4f}, {foundry_data['longitude']:.4f}"),
-            ], className="popup-section"),
-            
+                html.Span(foundry_data['country'], className="popup-badge"),
+                html.Span(foundry_data['type'], className="popup-badge popup-badge-muted"),
+            ], className="popup-badges"),
+
             html.Div([
-                html.H6("Technology Profile", className="popup-section-header"),
-                html.P(f"Category: {foundry_data['tech_category']}"),
-                html.P(f"Substrate: {foundry_data['substrate']}"),
-                html.P(f"Technologies: {technologies}"),
-                html.P(f"Wavelength: {foundry_data['wavelength']}"),
+                html.H6("Technology", className="popup-section-header"),
+                html.P(_friendly_tech_label(foundry_data['tech_category'])),
+                html.P(f"Substrate · {foundry_data['substrate']}"),
+                html.P(f"Wavelength · {foundry_data['wavelength']}"),
+                html.P(technologies, className="popup-muted"),
             ], className="popup-section"),
-            
+
             html.Div([
-                html.H6("Business Model", className="popup-section-header"),
-                html.P(f"Type: {foundry_data['type']}"),
-                html.P(f"Access: {foundry_data['access']}"),
-                html.P(f"Applications: {foundry_data['applications']}"),
+                html.H6("Access", className="popup-section-header"),
+                html.P(foundry_data['access']),
+                html.P(f"Focus · {foundry_data['applications']}"),
             ], className="popup-section"),
-            
+
             html.Div([
                 html.H6("Schedule", className="popup-section-header"),
                 html.P(schedule_str),
             ], className="popup-section"),
-            
+
+            html.P(
+                "Indicative MPW pricing may vary by run and design.",
+                className="popup-disclaimer",
+            ),
         ]),
         dbc.ModalFooter(
-            dbc.Button("Close", id="close-popup", className="ms-auto", n_clicks=0)
+            dbc.Button("Close", id="close-popup", className="ms-auto popup-close-btn", n_clicks=0)
         ),
     ], id="foundry-popup", is_open=False, size="lg")
-    
+
     return popup
 
 
@@ -236,26 +259,26 @@ def create_comparison_panel(selected_foundries: List[pd.Series]) -> html.Div:
     """
     if not selected_foundries:
         return html.Div()
-    
+
     comparison_rows = []
     for foundry in selected_foundries:
         row = html.Tr([
             html.Td(foundry['foundry']),
             html.Td(foundry['country']),
             html.Td(foundry['type']),
-            html.Td(foundry['tech_category']),
+            html.Td(_friendly_tech_label(foundry['tech_category'])),
             html.Td(foundry['substrate']),
             html.Td(foundry['wavelength']),
             html.Td(foundry['access']),
         ])
         comparison_rows.append(row)
-    
+
     comparison_table = html.Table([
         html.Thead([
             html.Tr([
                 html.Th("Foundry"),
                 html.Th("Country"),
-                html.Th("Type"),
+                html.Th("Maturity"),
                 html.Th("Technology"),
                 html.Th("Substrate"),
                 html.Th("Wavelength"),
@@ -264,9 +287,9 @@ def create_comparison_panel(selected_foundries: List[pd.Series]) -> html.Div:
         ]),
         html.Tbody(comparison_rows),
     ], className="comparison-table")
-    
+
     return html.Div([
-        html.H5("Comparison", className="comparison-header"),
+        html.H5("Compare foundries", className="comparison-header"),
         comparison_table,
     ], className="comparison-panel")
 
@@ -276,82 +299,99 @@ def create_main_layout() -> html.Div:
     Create the main application layout.
     """
     return html.Div([
-        # Header
         html.Div([
-            html.H1("Integrated Optical Foundries 2026", className="app-title"),
-            html.P("Interactive World Map & Analytics", className="app-subtitle"),
+            html.Div([
+                html.Div([
+                    html.Img(
+                        src="/assets/pixspain-logo.png?v=3",
+                        alt="PIXSpain",
+                        className="brand-logo",
+                    ),
+                ], className="brand-logo-wrap"),
+                html.Div([
+                    html.H1("Photonic Foundries Map", className="app-title"),
+                    html.P("Discover MPW partners worldwide", className="app-subtitle"),
+                ], className="header-copy"),
+            ], className="header-brand"),
         ], className="app-header"),
-        
-        # Main content area
+
         html.Div([
-            # Map container
             html.Div([
                 dcc.Graph(id='world-map', className="map-graph"),
                 dcc.Store(id='selected-foundries', data=[]),
                 dcc.Store(id='filtered-data', data=[]),
             ], className="map-container"),
-            
-            # Comparison panel (hidden by default)
             html.Div(id='comparison-panel', className="comparison-container", style={'display': 'none'}),
         ], className="main-content"),
-        
-        # Foundry popup
+
         html.Div(id='foundry-popup-container'),
-        
-        # Loading indicator
         dcc.Loading(id="loading", type="default", children=html.Div(id="loading-output")),
+
+        html.Footer([
+            html.Img(
+                src="/assets/funding-partners.png?v=2",
+                alt="Funding partners",
+                className="funding-logo",
+            ),
+        ], className="app-footer"),
     ], className="app-container")
 
 
 def create_stats_display(df: pd.DataFrame) -> html.Div:
     """
-    Create statistics display component.
+    Create a compact, readable statistics strip.
     """
-    import pandas as pd
-    
     total = len(df)
-    by_type = df['type'].value_counts().to_dict()
-    by_tech = df['tech_category'].value_counts().to_dict()
     countries = df['country'].nunique()
-    
-    # Economic statistics
-    if 'mpw_price_usd' in df.columns:
-        avg_price = df['mpw_price_usd'].mean()
-        min_price = df['mpw_price_usd'].min()
-        max_price = df['mpw_price_usd'].max()
-        
-        if pd.notna(avg_price):
-            price_stats = [
-                html.P(f"Avg. MPW Price: ${avg_price:,.0f}", className="stat-item"),
-                html.P(f"Price Range: ${min_price:,.0f} - ${max_price:,.0f}", className="stat-item"),
-            ]
-        else:
-            price_stats = []
-    else:
-        price_stats = []
-    
-    if 'lead_time_weeks' in df.columns:
-        avg_lead_time = df['lead_time_weeks'].mean()
-        if pd.notna(avg_lead_time):
-            lead_time_stat = html.P(f"Avg. Lead Time: {avg_lead_time:.1f} weeks", className="stat-item")
-        else:
-            lead_time_stat = None
-    else:
-        lead_time_stat = None
-    
-    stats_items = [
-        html.P(f"Total Foundries: {total}", className="stat-item"),
-        html.P(f"Countries: {countries}", className="stat-item"),
-        html.P(f"Commercial: {by_type.get('Commercial', 0)}", className="stat-item"),
-        html.P(f"Pilot: {by_type.get('Pilot', 0)}", className="stat-item"),
-        html.P(f"R&D: {by_type.get('R&D', 0)}", className="stat-item"),
-    ]
-    
-    stats_items.extend(price_stats)
-    if lead_time_stat:
-        stats_items.append(lead_time_stat)
-    
-    stats = html.Div(stats_items, className="stats-content")
-    
-    return stats
+    by_type = df['type'].value_counts().to_dict()
 
+    cards = [
+        html.Div([
+            html.Span(str(total), className="stat-value"),
+            html.Span("Foundries", className="stat-label"),
+        ], className="stat-card"),
+        html.Div([
+            html.Span(str(countries), className="stat-value"),
+            html.Span("Countries", className="stat-label"),
+        ], className="stat-card"),
+        html.Div([
+            html.Span(str(by_type.get('Commercial', 0)), className="stat-value"),
+            html.Span("Commercial", className="stat-label"),
+        ], className="stat-card"),
+        html.Div([
+            html.Span(str(by_type.get('Pilot', 0) + by_type.get('Pilotline', 0)), className="stat-value"),
+            html.Span("Pilot lines", className="stat-label"),
+        ], className="stat-card"),
+    ]
+
+    def _scalar(value):
+        if isinstance(value, pd.Series):
+            value = value.dropna()
+            return value.iloc[0] if len(value) else None
+        return value
+
+    extras = []
+    if 'mpw_price_usd' in df.columns:
+        avg_price = _scalar(df['mpw_price_usd'].mean())
+        if avg_price is not None and pd.notna(avg_price):
+            extras.append(
+                html.P(
+                    f"Typical MPW from about ${float(avg_price):,.0f}",
+                    className="stat-footnote",
+                )
+            )
+
+    if 'lead_time_weeks' in df.columns:
+        avg_lead_time = _scalar(df['lead_time_weeks'].mean())
+        if avg_lead_time is not None and pd.notna(avg_lead_time):
+            extras.append(
+                html.P(
+                    f"Average lead time · {float(avg_lead_time):.0f} weeks",
+                    className="stat-footnote",
+                )
+            )
+
+    return html.Div([
+        html.Div(cards, className="stats-grid"),
+        *extras,
+    ], className="stats-content")

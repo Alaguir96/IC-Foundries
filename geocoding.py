@@ -26,15 +26,15 @@ FOUNDRY_COORDINATES = {
     # Netherlands
     'Aluvia': (52.3700, 4.9050),  # Amsterdam area (offset)
     'LioniX Int.': (52.1350, 6.1960),  # Enschede (offset)
-    'Smart Photonics': (51.4430, 5.4670),  # Eindhoven (offset)
+    'Smart Photonics': (51.4430, 5.8000),  # Eindhoven (moved right to fit inside Netherlands)
     
     # Singapore
     'AMF (now GF)': (1.3550, 103.8180),  # Singapore (offset)
-    'Compoundtek': (1.3490, 103.8210),  # Singapore (offset)
+    'Compoundtek': (1.6000, 103.8210),  # Singapore (moved further north)
     
     # Germany
-    'AMO GmbH': (50.7750, 6.0830),  # Aachen (more specific)
-    'IHP': (52.3400, 14.5500),  # Frankfurt (Oder) (more specific)
+    'AMO (GmbH)': (50.7700, 6.5600),  # Aachen (moved east to sit clearly inside Germany)
+    'IHP': (52.3400, 13.4000),  # Frankfurt (Oder) (moved west to fit inside Germany)
     'HHI': (52.5100, 13.3200),  # Berlin (more specific)
     
     # Belgium
@@ -50,9 +50,9 @@ FOUNDRY_COORDINATES = {
     'STMicro': (45.1850, 5.7290),  # Grenoble area (offset)
     
     # Switzerland
-    'Ccraft': (46.2100, 6.1400),  # Geneva area (offset)
+    'Ccraft': (46.9500, 6.6400),  # Moved east into Switzerland
     'CSEM': (47.3800, 8.5400),  # Zurich area (offset)
-    'LIGENTEC': (46.5220, 6.6300),  # Lausanne area (offset)
+    'LIGENTEC': (47.0000, 8.0000),  # Lausanne area (moved right into Switzerland)
     
     # Canada
     'Applied Nanotools': (53.5461, -113.4938),  # Edmonton
@@ -76,28 +76,26 @@ FOUNDRY_COORDINATES = {
     'Silicon Austria Lab': (47.0707, 15.4395),  # Graz
     
     # Denmark
-    'SiPhotonIC': (55.6761, 12.5683),  # Copenhagen area
+    'SiPhotonIC': (55.6761, 12.2000),  # Moved right to be inside Denmark
     
     # Morocco
-    'Siltera': (33.5731, -7.5898),  # Casablanca area
     
     # Unknown locations - use country center or major city (with offsets)
-    'Luxtelligence': (46.2070, 6.1410),  # Assume Switzerland (offset)
-    'Siver Semi': (52.3700, 4.9000),  # Assume Netherlands (offset)
+    'Luxtelligence': (46.5500, 6.6310),  # Moved down into Switzerland
+    'Sivers Photonics': (55.8642, -4.2518),  # Glasgow, Scotland
     'New Origin': (52.3650, 4.9080),  # Assume Netherlands (offset)
     'UMC': (24.1480, 120.6750),  # Assume Taiwan (offset)
-    'PIXEurope': (50.1130, 8.6800),  # Assume Germany/Frankfurt (offset)
+    'Fraunhofer': (50.1130, 8.6800),  # Assume Germany/Frankfurt (offset)
     
     # Additional foundries with offsets to prevent overlap
-    'Ccraft': (46.2100, 6.1400),  # Geneva (offset)
+    'Ccraft': (46.9500, 6.6400),  # Moved east into Switzerland
     'CNM-IMB': (41.3880, 2.1700),  # Barcelona (offset)
     'Cornerstone': (52.2080, 0.1200),  # Cambridge (offset)
     'CSEM': (47.3800, 8.5400),  # Zurich (offset)
     'CUMEC': (29.5650, 106.5550),  # Chongqing (offset)
     'Sandia National Lab': (35.0860, -106.6480),  # Albuquerque (offset)
     'Silicon Austria Lab': (47.0720, 15.4370),  # Graz (offset)
-    'SiPhotonIC': (55.6780, 12.5660),  # Copenhagen (offset)
-    'Siltera': (33.5750, -7.5860),  # Casablanca (offset)
+    'SiPhotonIC': (55.6761, 12.2000),  # Moved right to be inside Denmark
     'Skywater Tech.': (44.9800, -93.2630),  # Bloomington (offset)
     'VTT': (60.1720, 24.9360),  # Espoo (offset)
 }

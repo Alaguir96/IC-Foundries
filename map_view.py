@@ -10,35 +10,39 @@ from typing import Dict, List, Optional
 import numpy as np
 
 
-# Color scheme for different categories
+# PIXSpain MMCPGI palette (sampled from brand slide):
+# Motivation #D87878 | Market #FCCC84 | Competition #C00000
+# Proposal #3C5460 | Go-to-Market #FCA818 | Impact #FCF0E4
+# Primary brand: Gold #FAAA1E | Burnt #EB5523 | Slate #415569 | Black #000000
 COLOR_SCHEME = {
     'type': {
-        'Commercial': '#2E86AB',  # Blue
-        'Pilot': '#A23B72',  # Purple
-        'R&D': '#F18F01',  # Orange
-        'Pilotline': '#C73E1D',  # Red
-        'Unknown': '#6C757D',  # Gray
+        'Commercial': '#C00000',       # Competition
+        'Pilot': '#D87878',            # Motivation
+        'R&D': '#FCCC84',              # Market
+        'Pilotline': '#FCA818',        # Go-to-Market
+        'Research Center': '#3C5460',  # Proposal
+        'Unknown': '#FCF0E4',          # Impact
     },
     'tech_category': {
-        'SiPh (Silicon Photonics)': '#1f77b4',
-        'InP': '#ff7f0e',
-        'LN (Lithium Niobate)': '#2ca02c',
-        'SiN (Silicon Nitride)': '#d62728',
-        'AlN/AlO': '#9467bd',
-        'Hybrid/Multi-platform': '#8c564b',
+        'SiPh (Silicon Photonics)': '#D87878',  # Motivation
+        'InP': '#FCCC84',                       # Market
+        'LN (Lithium Niobate)': '#C00000',      # Competition
+        'SiN (Silicon Nitride)': '#3C5460',     # Proposal
+        'AlN/AlO': '#FCA818',                   # Go-to-Market
+        'Hybrid/Multi-platform': '#FCF0E4',     # Impact
     },
     'access': {
-        'Open + PDK': '#28a745',
-        'OPEN + PDK': '#28a745',
-        'Open': '#17a2b8',
-        'OPEN': '#17a2b8',
-        'MIX': '#ffc107',
-        'Bilateral + PDK': '#6c757d',
-        'Bilateral + PDI': '#6c757d',
-        'Dedicated Engineering Runs Only': '#dc3545',
-        'Unknown': '#6c757d',
-        '??': '#6c757d',
-        '???': '#6c757d',
+        'Open + PDK': '#D87878',                    # Motivation
+        'OPEN + PDK': '#D87878',
+        'Open': '#FCCC84',                          # Market
+        'OPEN': '#FCCC84',
+        'MIX': '#FCA818',                           # Go-to-Market
+        'Bilateral + PDK': '#3C5460',               # Proposal
+        'Bilateral + PDI': '#3C5460',
+        'Dedicated Engineering Runs Only': '#C00000',  # Competition
+        'Unknown': '#FCF0E4',                       # Impact
+        '??': '#FCF0E4',
+        '???': '#FCF0E4',
     }
 }
 
@@ -103,9 +107,9 @@ def create_scatter_map(df: pd.DataFrame,
         fig.update_layout(
             title='No foundries match the selected filters',
             geo=dict(projection_type='natural earth'),
-            paper_bgcolor='rgb(10, 10, 20)',
-            plot_bgcolor='rgb(10, 10, 20)',
-            font=dict(color='white'),
+            paper_bgcolor='#000000',
+            plot_bgcolor='#000000',
+            font=dict(color='#FCF0E4'),
         )
         return fig
     
@@ -114,32 +118,11 @@ def create_scatter_map(df: pd.DataFrame,
     
     # Create hover text
     def create_hover_text(row):
-        tech_str = ', '.join(row['technologies']) if row['technologies'] else 'N/A'
-        
-        # Format pricing
-        mpw_price = row.get('mpw_price_usd', 0)
-        if pd.notna(mpw_price) and mpw_price > 0:
-            price_str = f"${mpw_price:,.0f}/wafer"
-        else:
-            price_str = "N/A"
-        
-        lead_time = row.get('lead_time_weeks', 'N/A')
-        if pd.notna(lead_time) and lead_time != 'N/A':
-            lead_str = f"{lead_time} weeks"
-        else:
-            lead_str = "N/A"
-        
         return (
             f"<b>{row['foundry']}</b><br>"
-            f"Country: {row['country']}<br>"
-            f"Type: {row['type']}<br>"
-            f"Technology: {row['tech_category']}<br>"
-            f"💰 MPW Price: {price_str}<br>"
-            f"⏱️ Lead Time: {lead_str}<br>"
-            f"Substrate: {row['substrate']}<br>"
-            f"Wavelength: {row['wavelength']}<br>"
-            f"Access: {row['access']}<br>"
-            f"Click for full details"
+            f"{row['country']} · {row['type']}<br>"
+            f"{row['tech_category']}<br>"
+            f"<span style='opacity:0.75'>Click for details</span>"
         )
     
     plot_df['hover_text'] = plot_df.apply(create_hover_text, axis=1)
@@ -147,13 +130,13 @@ def create_scatter_map(df: pd.DataFrame,
     
     # Get color mapping
     color_map = COLOR_SCHEME.get(color_by, COLOR_SCHEME['type'])
-    plot_df['color'] = plot_df[color_by].map(color_map).fillna('#6c757d')
+    plot_df['color'] = plot_df[color_by].map(color_map).fillna('#3C5460')
     
     # Highlight selected foundries
     if selected_foundries:
         plot_df['selected'] = plot_df['nr'].isin(selected_foundries)
         plot_df.loc[plot_df['selected'], 'marker_size'] *= 1.5
-        plot_df.loc[plot_df['selected'], 'color'] = '#FFD700'  # Gold for selected
+        plot_df.loc[plot_df['selected'], 'color'] = '#FAAA1E'  # Brand gold for selected
     else:
         plot_df['selected'] = False
     
@@ -191,38 +174,57 @@ def create_scatter_map(df: pd.DataFrame,
             customdata=customdata_values,
         ))
     
+    # Add a masking line to hide the Morocco–Western Sahara border (best-effort)
+    # This draws a thick line colored the same as the land to visually mask the disputed border.
+    try:
+        mask_lons = [-8.5, -9.0, -10.0, -11.0, -12.0, -13.0, -14.0, -15.5, -16.0]
+        mask_lats = [29.0, 28.5, 27.8, 27.0, 26.0, 25.0, 24.0, 23.0, 22.0]
+        fig.add_trace(go.Scattergeo(
+            lon=mask_lons,
+            lat=mask_lats,
+            mode='lines',
+            hoverinfo='none',
+            showlegend=False,
+            line=dict(width=8, color='#3C5460')
+        ))
+    except Exception:
+        # If masking fails, continue without stopping the map creation
+        pass
+
     # Update layout
     fig.update_layout(
         title=dict(
-            text='Integrated Optical Foundries 2026 - World Map',
+            text='Photonic foundries offering MPW services',
             x=0.5,
-            font=dict(size=24, color='white')
+            y=0.96,
+            yanchor='top',
+            font=dict(size=16, color='#FCF0E4', family='Sora, Arial')
         ),
         geo=dict(
             projection_type='natural earth',
             showland=True,
-            landcolor='rgb(30, 30, 30)',
-            coastlinecolor='rgb(100, 100, 100)',
+            landcolor='#3C5460',
+            coastlinecolor='#415569',
             showocean=True,
-            oceancolor='rgb(20, 20, 40)',
+            oceancolor='#000000',
             showlakes=True,
-            lakecolor='rgb(20, 40, 60)',
+            lakecolor='#000000',
             showcountries=True,
-            countrycolor='rgb(80, 80, 80)',
-            bgcolor='rgb(10, 10, 20)',
+            countrycolor='#415569',
+            bgcolor='#000000',
             lonaxis=dict(range=[-180, 180]),
             lataxis=dict(range=[-90, 90]),
         ),
-        paper_bgcolor='rgb(10, 10, 20)',
-        plot_bgcolor='rgb(10, 10, 20)',
-        font=dict(color='white', family='Arial'),
+        paper_bgcolor='#000000',
+        plot_bgcolor='#000000',
+        font=dict(color='#FCF0E4', family='Arial'),
         height=700,
-        margin=dict(l=0, r=0, t=50, b=0),
+        margin=dict(l=0, r=0, t=56, b=0),
         legend=dict(
-            bgcolor='rgba(30, 30, 30, 0.8)',
-            bordercolor='rgba(255, 255, 255, 0.2)',
+            bgcolor='rgba(60, 84, 96, 0.92)',
+            bordercolor='rgba(250, 170, 30, 0.28)',
             borderwidth=1,
-            font=dict(color='white', size=12),
+            font=dict(color='#FCF0E4', size=11, family='Manrope, Arial'),
             x=0.02,
             y=0.98,
             yanchor='top',
@@ -283,7 +285,7 @@ def create_comparison_view(foundries: List[pd.Series]) -> go.Figure:
                 lon=[foundry['longitude']],
                 lat=[foundry['latitude']],
                 mode='markers',
-                marker=dict(size=20, color='#FFD700'),
+                marker=dict(size=20, color='#FAAA1E'),
                 name=foundry['foundry'],
                 showlegend=False,
             ),
@@ -293,15 +295,15 @@ def create_comparison_view(foundries: List[pd.Series]) -> go.Figure:
     fig.update_geos(
         projection_type='natural earth',
         showland=True,
-        landcolor='rgb(30, 30, 30)',
-        bgcolor='rgb(10, 10, 20)',
+        landcolor='#3C5460',
+        bgcolor='#000000',
     )
     
     fig.update_layout(
         title='Foundry Comparison',
-        paper_bgcolor='rgb(10, 10, 20)',
-        plot_bgcolor='rgb(10, 10, 20)',
-        font=dict(color='white'),
+        paper_bgcolor='#000000',
+        plot_bgcolor='#000000',
+        font=dict(color='#FCF0E4'),
         height=400,
     )
     

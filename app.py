@@ -19,463 +19,592 @@ from ui_components import (
     create_main_layout, create_stats_display
 )
 
-# Initialize Dash app with dark theme
+# Initialize Dash app
 app = dash.Dash(
     __name__,
     external_stylesheets=[
         dbc.themes.DARKLY,
-        'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+        'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap'
     ],
     suppress_callback_exceptions=True
 )
 
-# Custom CSS
+# Custom CSS — PIXSpain brand, product-style shell
 app.index_string = '''
 <!DOCTYPE html>
 <html>
     <head>
         {%metas%}
-        <title>Integrated Optical Foundries 2026</title>
+        <title>PIXSpain · Photonic Foundries Map</title>
         {%favicon%}
         {%css%}
         <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
+            :root {
+                --bg: #000000;
+                --surface: #3C5460;
+                --surface-2: #415569;
+                --gold: #FAAA1E;
+                --burnt: #EB5523;
+                --cream: #FCF0E4;
+                --cream-muted: #C8B8A8;
+                --line: rgba(252, 240, 228, 0.12);
+                --line-strong: rgba(252, 240, 228, 0.22);
+                --radius: 14px;
+                --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
             }
-            
+
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+
             body {
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                background-color: #0a0a14;
-                color: #ffffff;
+                font-family: 'Manrope', system-ui, sans-serif;
+                background:
+                    radial-gradient(1200px 600px at 10% -10%, rgba(250, 170, 30, 0.12), transparent 55%),
+                    radial-gradient(900px 500px at 100% 0%, rgba(235, 85, 35, 0.10), transparent 50%),
+                    var(--bg);
+                color: var(--cream);
+                -webkit-font-smoothing: antialiased;
             }
-            
+
             .app-container {
                 display: flex;
                 flex-direction: column;
                 height: 100vh;
                 overflow: hidden;
             }
-            
+
             .app-header {
-                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-                padding: 20px 30px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+                padding: 14px 28px;
+                background: linear-gradient(135deg, rgba(60, 84, 96, 0.92), rgba(65, 85, 105, 0.88));
+                border-bottom: 1px solid var(--line);
+                backdrop-filter: blur(12px);
+                position: relative;
             }
-            
+
+            .header-brand {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                min-width: 0;
+            }
+
+            .brand-logo-wrap {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: transparent;
+                border: none;
+                border-radius: 0;
+                padding: 0;
+                flex-shrink: 0;
+                box-shadow: none;
+            }
+
+            .brand-logo {
+                height: 44px;
+                width: auto;
+                max-width: 240px;
+                object-fit: contain;
+                display: block;
+            }
+
+            .header-copy {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                min-width: 0;
+            }
+
+            .brand-mark {
+                font-family: 'Sora', sans-serif;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: var(--gold);
+                margin: 0;
+            }
+
             .app-title {
-                font-size: 28px;
-                font-weight: 700;
-                margin-bottom: 5px;
-                background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+                font-family: 'Sora', sans-serif;
+                font-size: 22px;
+                font-weight: 650;
+                letter-spacing: -0.02em;
+                margin: 0;
+                color: var(--cream);
+                background: none;
+                -webkit-text-fill-color: unset;
             }
-            
+
             .app-subtitle {
-                font-size: 14px;
-                color: #a0a0a0;
-                font-weight: 300;
+                font-size: 13px;
+                color: var(--cream-muted);
+                font-weight: 400;
+                margin: 0;
             }
-            
+
+            .app-footer {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                background: #000000;
+                border-top: 1px solid var(--line);
+                flex-shrink: 0;
+            }
+
+            .funding-logo {
+                width: min(1100px, 100%);
+                height: auto;
+                max-height: 78px;
+                object-fit: contain;
+                object-position: center;
+                display: block;
+                padding: 10px 16px;
+            }
+
+            .funding-caption {
+                display: none;
+            }
+
             .main-content {
                 display: flex;
                 flex: 1;
                 overflow: hidden;
                 position: relative;
             }
-            
+
             .sidebar {
-                width: 320px;
-                min-width: 280px;
+                width: 340px;
+                min-width: 300px;
                 max-width: 400px;
-                background: #1a1a2e;
-                padding: 20px;
+                background: linear-gradient(180deg, rgba(60, 84, 96, 0.96), rgba(45, 64, 76, 0.98));
+                padding: 22px 20px 28px;
                 overflow-y: auto;
-                border-right: 1px solid rgba(255, 255, 255, 0.1);
-                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-                transition: transform 0.3s ease-in-out;
+                border-right: 1px solid var(--line);
+                box-shadow: 8px 0 30px rgba(0, 0, 0, 0.2);
+                transition: transform 0.3s ease;
                 z-index: 1000;
             }
-            
-            .sidebar.hidden {
-                transform: translateX(-100%);
+
+            .sidebar-intro { margin-bottom: 18px; }
+
+            .sidebar-kicker {
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--gold);
+                margin-bottom: 6px;
             }
-            
-            /* Burger menu button */
+
+            .sidebar-header {
+                font-family: 'Sora', sans-serif;
+                font-size: 20px;
+                font-weight: 600;
+                color: var(--cream);
+                margin: 0 0 6px;
+            }
+
+            .sidebar-lead {
+                font-size: 13px;
+                line-height: 1.45;
+                color: var(--cream-muted);
+                margin: 0;
+            }
+
+            .sidebar.hidden { transform: translateX(-100%); }
+
             .burger-menu {
                 display: none;
                 position: fixed;
-                top: 20px;
-                left: 20px;
+                top: 16px;
+                left: 16px;
                 z-index: 1001;
-                background: #1a1a2e;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 6px;
+                background: var(--surface);
+                border: 1px solid var(--line-strong);
+                border-radius: 10px;
                 padding: 10px;
                 cursor: pointer;
-                color: #ffffff;
-                font-size: 20px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                color: var(--cream);
+                box-shadow: var(--shadow);
             }
-            
-            .burger-menu:hover {
-                background: #2a2a3e;
-            }
-            
+
+            .burger-menu:hover { background: var(--surface-2); }
+
             .burger-menu-icon {
                 display: flex;
                 flex-direction: column;
                 gap: 4px;
-                width: 24px;
-                height: 24px;
+                width: 22px;
+                height: 18px;
             }
-            
+
             .burger-menu-icon span {
                 display: block;
                 width: 100%;
                 height: 2px;
-                background: #ffffff;
+                background: var(--cream);
+                border-radius: 2px;
                 transition: all 0.3s ease;
             }
-            
-            /* Responsive design */
+
             @media (max-width: 768px) {
                 .sidebar {
                     position: fixed;
                     left: 0;
                     top: 0;
                     height: 100vh;
-                    width: 280px;
-                    max-width: 85vw;
+                    width: 300px;
+                    max-width: 88vw;
                     transform: translateX(-100%);
-                    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+                    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.45);
                     z-index: 1000;
-                    padding: 15px;
-                    overflow-y: auto;
-                    overflow-x: hidden;
                 }
-                
-                .sidebar.show {
-                    transform: translateX(0);
-                }
-                
-                .burger-menu {
-                    display: block;
-                }
-                
+                .sidebar.show { transform: translateX(0); }
+                .burger-menu { display: block; }
                 .app-header {
-                    padding-left: 60px;
-                    padding-right: 20px;
-                    position: relative;
+                    padding-left: 64px;
+                    padding-right: 18px;
+                    flex-wrap: wrap;
                 }
-                
-                .map-container {
-                    width: 100%;
-                    margin-left: 0;
-                }
-                
-                .app-title {
-                    font-size: 20px;
-                }
-                
-                .app-subtitle {
-                    font-size: 12px;
-                }
-                
-                .filter-section {
-                    margin-bottom: 15px;
-                }
-                
-                .filter-label {
-                    font-size: 11px;
-                }
-                
-                .search-input {
-                    padding: 8px;
-                    font-size: 13px;
-                }
+                .brand-logo-wrap { padding: 0; }
+                .brand-logo { height: 34px; max-width: 170px; }
+                .map-container { width: 100%; margin-left: 0; }
+                .app-title { font-size: 18px; }
+                .app-subtitle { font-size: 12px; }
+                .funding-logo { max-height: 58px; padding: 8px 10px; }
+                .app-footer { padding: 0; }
             }
-            
-            @media (min-width: 769px) and (max-width: 1024px) {
-                .sidebar {
-                    width: 280px;
-                    min-width: 250px;
-                }
-                
-                .burger-menu {
-                    display: none;
-                }
+
+            @media (min-width: 769px) {
+                .burger-menu { display: none; }
+                .sidebar-overlay { display: none !important; }
             }
-            
-            @media (min-width: 1025px) {
-                .burger-menu {
-                    display: none;
-                }
-                
-                .sidebar-overlay {
-                    display: none !important;
-                }
-            }
-            
-            /* Overlay for mobile when sidebar is open */
+
             .sidebar-overlay {
                 display: none;
                 position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
+                inset: 0;
+                background: rgba(0, 0, 0, 0.55);
                 z-index: 999;
             }
-            
-            .sidebar-overlay.show {
-                display: block;
-            }
-            
-            @media (max-width: 768px) {
-                .sidebar-overlay.show {
-                    display: block;
-                }
-            }
-            
-            .sidebar-header {
-                font-size: 18px;
-                font-weight: 600;
-                margin-bottom: 10px;
-                color: #4facfe;
-            }
-            
-            .sidebar-divider {
-                border-color: rgba(255, 255, 255, 0.1);
-                margin: 15px 0;
-            }
-            
-            .filter-section {
-                margin-bottom: 20px;
-            }
-            
+            .sidebar-overlay.show { display: block; }
+
+            .filter-section { margin-bottom: 18px; }
+
             .filter-label {
-                font-size: 12px;
-                font-weight: 500;
-                color: #a0a0a0;
+                display: block;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--cream-muted);
                 margin-bottom: 8px;
                 text-transform: uppercase;
-                letter-spacing: 0.5px;
+                letter-spacing: 0.08em;
             }
-            
+
             .search-input {
                 width: 100%;
-                padding: 10px;
-                background: #ffffff;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 6px;
-                color: #000000;
+                padding: 12px 14px;
+                background: rgba(252, 240, 228, 0.96);
+                border: 1px solid transparent;
+                border-radius: 10px;
+                color: #111;
                 font-size: 14px;
+                font-family: inherit;
+                transition: border-color 0.2s, box-shadow 0.2s;
             }
-            
+
             .search-input:focus {
                 outline: none;
-                border-color: #4facfe;
-                box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+                border-color: var(--gold);
+                box-shadow: 0 0 0 3px rgba(250, 170, 30, 0.28);
             }
-            
-            .filter-dropdown {
-                background: #ffffff;
-            }
-            
-            /* Dash Dropdown styling */
+
             .filter-dropdown .Select-control,
-            .filter-dropdown .Select-input,
+            .filter-dropdown .Select-menu-outer,
+            .Select-control {
+                background: rgba(252, 240, 228, 0.96) !important;
+                border-radius: 10px !important;
+                border: none !important;
+                min-height: 42px !important;
+            }
+
             .filter-dropdown .Select-placeholder,
             .filter-dropdown .Select-value-label,
-            .filter-dropdown input {
-                color: #000000 !important;
-                background: #ffffff !important;
-            }
-            
-            .filter-dropdown .Select-menu-outer {
-                background: #ffffff !important;
-            }
-            
-            .filter-dropdown .Select-option {
-                color: #000000 !important;
-                background: #ffffff !important;
-            }
-            
-            .filter-dropdown .Select-option:hover {
-                background: #e0e0e0 !important;
-            }
-            
-            /* Additional Dash dropdown styling */
-            div[class*="Select"] {
-                color: #000000 !important;
-            }
-            
-            div[class*="Select"] input {
-                color: #000000 !important;
-            }
-            
-            /* Target Dash dcc.Dropdown specifically */
+            .filter-dropdown input,
+            .Select-placeholder,
+            .Select-value-label,
+            .Select-value,
+            .Select-input > input,
+            div[class*="Select"],
+            div[class*="Select"] input,
             #country-filter,
-            #tech-filter {
-                color: #000000 !important;
-            }
-            
+            #tech-filter,
             #country-filter .Select-value-label,
             #tech-filter .Select-value-label,
             #country-filter input,
-            #tech-filter input {
-                color: #000000 !important;
+            #tech-filter input,
+            .dash-dropdown {
+                color: #111 !important;
             }
-            
-            .filter-checklist {
-                font-size: 13px;
+
+            .Select-option {
+                color: #111 !important;
+                background: #fff !important;
             }
-            
+            .Select-option:hover,
+            .Select-option.is-focused {
+                background: #f3e7d8 !important;
+                color: #111 !important;
+            }
+            .Select-option.is-selected {
+                background: var(--gold) !important;
+                color: #111 !important;
+            }
+
+            .filter-checklist,
             .filter-radio {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
                 font-size: 13px;
+                color: var(--cream);
             }
-            
+
+            .filter-check-label,
+            .filter-radio-label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 8px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+
+            .filter-check-label:hover,
+            .filter-radio-label:hover {
+                background: rgba(252, 240, 228, 0.06);
+            }
+
+            .advanced-panel {
+                margin: 8px 0 20px;
+                border: 1px solid var(--line);
+                border-radius: var(--radius);
+                background: rgba(0, 0, 0, 0.18);
+                overflow: hidden;
+            }
+
+            .advanced-summary {
+                list-style: none;
+                cursor: pointer;
+                padding: 12px 14px;
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--cream);
+                user-select: none;
+            }
+            .advanced-summary::-webkit-details-marker { display: none; }
+            .advanced-summary::before {
+                content: '+';
+                display: inline-block;
+                width: 1.2em;
+                color: var(--gold);
+                font-weight: 700;
+            }
+            details[open] > .advanced-summary::before { content: '–'; }
+            .advanced-body { padding: 4px 14px 14px; }
+
+            .stats-panel {
+                margin-top: 8px;
+                padding-top: 8px;
+            }
+
+            .stats-header {
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: var(--gold);
+                margin-bottom: 12px;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .stat-card {
+                background: rgba(0, 0, 0, 0.22);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 12px 12px 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .stat-value {
+                font-family: 'Sora', sans-serif;
+                font-size: 22px;
+                font-weight: 650;
+                color: var(--cream);
+                line-height: 1.1;
+            }
+
+            .stat-label {
+                font-size: 11px;
+                color: var(--cream-muted);
+                letter-spacing: 0.02em;
+            }
+
+            .stat-footnote {
+                margin-top: 10px;
+                font-size: 12px;
+                color: var(--cream-muted);
+                line-height: 1.4;
+            }
+
+            .export-button {
+                width: 100%;
+                margin-top: 4px;
+                border: none !important;
+                border-radius: 10px !important;
+                background: linear-gradient(135deg, var(--gold), var(--burnt)) !important;
+                color: #111 !important;
+                font-weight: 700 !important;
+                letter-spacing: 0.02em;
+                padding: 11px 14px !important;
+                box-shadow: 0 8px 24px rgba(235, 85, 35, 0.25);
+            }
+            .export-button:hover {
+                filter: brightness(1.05);
+            }
+
             .map-container {
                 flex: 1;
                 position: relative;
-                background: #0a0a14;
+                background: var(--bg);
             }
-            
+
             .map-graph {
                 height: 100%;
                 width: 100%;
             }
-            
-            .stats-header {
-                font-size: 14px;
-                font-weight: 600;
-                margin-bottom: 10px;
-                color: #4facfe;
-            }
-            
-            .stats-display {
-                font-size: 12px;
-                color: #c0c0c0;
-            }
-            
-            .stats-content {
-                margin-top: 10px;
-            }
-            
-            .stat-item {
-                margin: 5px 0;
-                padding: 5px 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            }
-            
-            .export-button {
-                width: 100%;
-                margin-top: 10px;
-            }
-            
+
             .comparison-container {
                 position: absolute;
                 bottom: 20px;
                 left: 20px;
                 right: 20px;
-                background: rgba(26, 26, 46, 0.95);
-                padding: 20px;
-                border-radius: 8px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-                max-height: 300px;
+                background: rgba(60, 84, 96, 0.96);
+                padding: 18px 20px;
+                border-radius: var(--radius);
+                border: 1px solid var(--line-strong);
+                box-shadow: var(--shadow);
+                max-height: 280px;
                 overflow-y: auto;
                 z-index: 1000;
+                backdrop-filter: blur(10px);
             }
-            
+
             .comparison-header {
-                font-size: 16px;
+                font-family: 'Sora', sans-serif;
+                font-size: 15px;
                 font-weight: 600;
-                margin-bottom: 15px;
-                color: #4facfe;
+                margin-bottom: 12px;
+                color: var(--gold);
             }
-            
+
             .comparison-table {
                 width: 100%;
                 font-size: 12px;
                 border-collapse: collapse;
             }
-            
             .comparison-table th,
             .comparison-table td {
-                padding: 8px 12px;
+                padding: 8px 10px;
                 text-align: left;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                border-bottom: 1px solid var(--line);
             }
-            
             .comparison-table th {
-                background: rgba(79, 172, 254, 0.1);
+                background: rgba(250, 170, 30, 0.12);
                 font-weight: 600;
-                color: #4facfe;
+                color: var(--gold);
             }
-            
-            .popup-section {
-                margin-bottom: 20px;
-            }
-            
+
+            .popup-section { margin-bottom: 18px; }
             .popup-section-header {
-                font-size: 14px;
-                font-weight: 600;
-                color: #4facfe;
-                margin-bottom: 8px;
-            }
-            
-            .popup-section p {
+                font-family: 'Sora', sans-serif;
                 font-size: 13px;
-                color: #c0c0c0;
-                margin: 5px 0;
+                font-weight: 600;
+                color: var(--gold);
+                margin-bottom: 8px;
+                letter-spacing: 0.02em;
             }
-            
-            /* Additional styling for Dash dropdowns - ensure black text */
-            .dash-dropdown {
-                color: #000000 !important;
+            .popup-section p {
+                font-size: 14px;
+                color: var(--cream);
+                margin: 4px 0;
+                line-height: 1.45;
             }
-            
-            /* React-Select component styling */
-            .Select-control {
-                background-color: #ffffff !important;
-                color: #000000 !important;
+            .popup-muted { color: var(--cream-muted) !important; font-size: 13px !important; }
+            .popup-disclaimer {
+                font-size: 12px !important;
+                color: var(--cream-muted) !important;
+                margin-top: 8px;
             }
-            
-            .Select-input > input {
-                color: #000000 !important;
+            .popup-badges {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 18px;
             }
-            
-            .Select-placeholder,
-            .Select-value-label,
-            .Select-value {
-                color: #000000 !important;
+            .popup-badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 5px 10px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 600;
+                background: rgba(250, 170, 30, 0.18);
+                color: var(--gold);
+                border: 1px solid rgba(250, 170, 30, 0.3);
             }
-            
-            .Select-menu-outer {
-                background-color: #ffffff !important;
+            .popup-badge-muted {
+                background: rgba(252, 240, 228, 0.08);
+                color: var(--cream);
+                border-color: var(--line);
             }
-            
-            .Select-option {
-                color: #000000 !important;
-                background-color: #ffffff !important;
+
+            .modal-content {
+                background: #2a3a46 !important;
+                border: 1px solid var(--line-strong) !important;
+                border-radius: 16px !important;
+                color: var(--cream) !important;
             }
-            
-            .Select-option:hover,
-            .Select-option.is-focused {
-                background-color: #e0e0e0 !important;
-                color: #000000 !important;
+            .modal-header, .modal-footer {
+                border-color: var(--line) !important;
             }
-            
-            .Select-option.is-selected {
-                background-color: #4facfe !important;
-                color: #ffffff !important;
+            .modal-title {
+                font-family: 'Sora', sans-serif !important;
+                font-weight: 650 !important;
             }
+
+            .rc-slider-track { background-color: var(--gold) !important; }
+            .rc-slider-handle {
+                border-color: var(--gold) !important;
+                background-color: var(--cream) !important;
+                opacity: 1 !important;
+            }
+            .rc-slider-rail { background-color: rgba(252, 240, 228, 0.18) !important; }
+            .rc-slider-mark-text { color: var(--cream-muted) !important; font-size: 11px !important; }
         </style>
     </head>
     <body>
@@ -488,6 +617,7 @@ app.index_string = '''
     </body>
 </html>
 '''
+
 
 # Load and prepare data
 print("Loading foundry data...")
@@ -503,7 +633,6 @@ app.layout = html.Div([
     
     # Header
     html.Div([
-        # Burger menu button
         html.Div([
             html.Div([
                 html.Span(),
@@ -511,9 +640,20 @@ app.layout = html.Div([
                 html.Span(),
             ], className="burger-menu-icon"),
         ], id="burger-menu", className="burger-menu", n_clicks=0),
-        
-        html.H1("Integrated Optical Foundries 2026", className="app-title"),
-        html.P("Interactive World Map & Analytics", className="app-subtitle"),
+
+        html.Div([
+            html.Div([
+                html.Img(
+                    src="/assets/pixspain-logo.png?v=3",
+                    alt="PIXSpain",
+                    className="brand-logo",
+                ),
+            ], className="brand-logo-wrap"),
+            html.Div([
+                html.H1("Photonic Foundries Map", className="app-title"),
+                html.P("Discover MPW partners worldwide", className="app-subtitle"),
+            ], className="header-copy"),
+        ], className="header-brand"),
     ], className="app-header"),
     
     # Sidebar overlay (for mobile)
@@ -540,6 +680,17 @@ app.layout = html.Div([
     
     # Loading indicator
     dcc.Loading(id="loading", type="default", children=html.Div(id="loading-output")),
+
+    # Funding acknowledgement
+    html.Footer([
+        html.Img(
+            src="/assets/funding-partners.png?v=2",
+            alt="Co-funded by the European Union, Chips JU, NextGenerationEU, "
+                "Ministerio para la Transformación Digital y de la Función Pública, "
+                "and Plan de Recuperación, Transformación y Resiliencia",
+            className="funding-logo",
+        ),
+    ], className="app-footer"),
 ], className="app-container")
 
 
@@ -646,96 +797,73 @@ def open_popup(click_data, filtered_data):
     foundry = df[df['nr'] == foundry_nr].iloc[0]
     
     # Create popup content
-    technologies = ', '.join(foundry['technologies']) if foundry['technologies'] else 'N/A'
-    
-    # Format economic data
+    technologies = ', '.join(foundry['technologies']) if foundry['technologies'] else 'Available on request'
+
     def format_currency(value):
         if pd.isna(value) or value == 0:
-            return 'N/A'
+            return None
         return f"${value:,.0f}"
-    
-    mpw_price = format_currency(foundry.get('mpw_price_usd', 0))
-    nre_cost = format_currency(foundry.get('nre_cost_usd', 0))
-    setup_cost = format_currency(foundry.get('setup_cost_usd', 0))
-    min_order = foundry.get('min_order_qty', 'N/A')
-    lead_time = foundry.get('lead_time_weeks', 'N/A')
-    capacity = foundry.get('capacity_wafers_month', 'N/A')
-    volume_threshold = foundry.get('volume_threshold', 'N/A')
-    volume_discount = foundry.get('volume_discount_percent', 'N/A')
-    per_unit = format_currency(foundry.get('per_unit_price_usd_per_mm2', 0))
-    positioning = foundry.get('market_positioning', 'N/A')
-    payment_terms = foundry.get('payment_terms', 'N/A')
-    ip_licensing = foundry.get('ip_licensing', 'N/A')
-    
+
+    positioning = foundry.get('market_positioning', None)
+    payment_terms = foundry.get('payment_terms', None)
+    ip_licensing = foundry.get('ip_licensing', None)
+
+    tech_label = foundry['tech_category']
+    friendly = {
+        'SiPh (Silicon Photonics)': 'Silicon Photonics',
+        'LN (Lithium Niobate)': 'Lithium Niobate',
+        'SiN (Silicon Nitride)': 'Silicon Nitride',
+        'Hybrid/Multi-platform': 'Hybrid / Multi-platform',
+    }
+    tech_label = friendly.get(tech_label, tech_label)
+
+    detail_rows = []
+    if positioning and str(positioning) not in ('N/A', 'nan', ''):
+        detail_rows.append(html.P(f"Positioning · {positioning}"))
+    if payment_terms and str(payment_terms) not in ('N/A', 'nan', ''):
+        detail_rows.append(html.P(f"Payment · {payment_terms}"))
+    if ip_licensing and str(ip_licensing) not in ('N/A', 'nan', ''):
+        detail_rows.append(html.P(f"IP · {ip_licensing}"))
+
     popup_content = [
         dbc.ModalHeader(dbc.ModalTitle(foundry['foundry'])),
         dbc.ModalBody([
             html.Div([
-                html.H6("Location", className="popup-section-header"),
-                html.P(f"Country: {foundry['country']} ({foundry['country_code']})"),
-                html.P(f"Coordinates: {foundry['latitude']:.4f}°, {foundry['longitude']:.4f}°"),
-            ], className="popup-section"),
-            
+                html.Span(foundry['country'], className="popup-badge"),
+                html.Span(foundry['type'], className="popup-badge popup-badge-muted"),
+            ], className="popup-badges"),
+
             html.Div([
-                html.H6("Technology Profile", className="popup-section-header"),
-                html.P(f"Category: {foundry['tech_category']}"),
-                html.P(f"Substrate: {foundry['substrate']}"),
-                html.P(f"Technologies: {technologies}"),
-                html.P(f"Wavelength: {foundry['wavelength']}"),
+                html.H6("Technology", className="popup-section-header"),
+                html.P(tech_label),
+                html.P(f"Substrate · {foundry['substrate']}"),
+                html.P(f"Wavelength · {foundry['wavelength']}"),
+                html.P(technologies, className="popup-muted"),
             ], className="popup-section"),
-            
+
             html.Div([
-                html.H6("Business Model", className="popup-section-header"),
-                html.P(f"Type: {foundry['type']}"),
-                html.P(f"Access: {foundry['access']}"),
-                html.P(f"Applications: {foundry['applications']}"),
-                html.P(f"Market Positioning: {positioning}"),
+                html.H6("Access & focus", className="popup-section-header"),
+                html.P(foundry['access']),
+                html.P(f"Applications · {foundry['applications']}"),
             ], className="popup-section"),
-            
+
             html.Div([
-                html.H6("💰 Pricing & Economics", className="popup-section-header"),
-                html.P([
-                    html.Strong("MPW Price: "), mpw_price, " per wafer"
-                ]),
-                html.P([
-                    html.Strong("NRE Cost: "), nre_cost
-                ]),
-                html.P([
-                    html.Strong("Setup Cost: "), setup_cost
-                ]),
-                html.P([
-                    html.Strong("Per Unit: "), per_unit, " per mm²"
-                ]),
-                html.P([
-                    html.Strong("Min. Order: "), f"{min_order} wafer(s)"
-                ]),
-            ], className="popup-section"),
-            
-            html.Div([
-                html.H6("📊 Volume & Capacity", className="popup-section-header"),
-                html.P([
-                    html.Strong("Capacity: "), f"{capacity} wafers/month"
-                ]),
-                html.P([
-                    html.Strong("Volume Discount: "), f"{volume_discount}% off at {volume_threshold}+ wafers"
-                ]),
-                html.P([
-                    html.Strong("Lead Time: "), f"{lead_time} weeks"
-                ]),
-            ], className="popup-section"),
-            
-            html.Div([
-                html.H6("📋 Terms & Conditions", className="popup-section-header"),
-                html.P([
-                    html.Strong("Payment Terms: "), payment_terms
-                ]),
-                html.P([
-                    html.Strong("IP/Licensing: "), ip_licensing
-                ]),
+                html.H6("Commercial notes", className="popup-section-header"),
+                *detail_rows,
+                html.P(
+                    "Contact technology@pixspain.es for run details and pricing.",
+                    className="popup-muted",
+                ),
+            ], className="popup-section") if detail_rows else html.Div([
+                html.H6("Next step", className="popup-section-header"),
+                html.P(
+                    "Contact technology@pixspain.es for run details and pricing.",
+                    className="popup-muted",
+                ),
             ], className="popup-section"),
         ]),
         dbc.ModalFooter(
-            dbc.Button("Close", id="close-popup-btn", className="ms-auto", n_clicks=0)
+            dbc.Button("Close", id="close-popup-btn", className="ms-auto export-button", n_clicks=0)
         ),
     ]
     
@@ -798,12 +926,14 @@ def export_to_csv(n_clicks, filtered_data):
 
 if __name__ == '__main__':
     print("\n" + "="*60)
-    print("Integrated Optical Foundries 2026 - Interactive Map")
+    print("PIXSpain · Photonic Foundries Map")
     print("="*60)
-    print(f"Loaded {len(df)} foundries from {df['country'].nunique()} countries")
+    print(f"Loaded {len(df)} foundries across {df['country'].nunique()} countries")
     print("\nStarting server...")
-    print("Open http://127.0.0.1:8050 in your browser")
+    # Port 8050 is often taken on this machine by AgilentLicenseService
+    # (which causes ERR_CONNECTION_RESET in the browser).
+    print("Open http://127.0.0.1:8051 in your browser")
     print("="*60 + "\n")
     
-    app.run(debug=True, host='127.0.0.1', port=8050)
+    app.run(debug=True, host='127.0.0.1', port=8051)
 
