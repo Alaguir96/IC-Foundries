@@ -29,6 +29,8 @@ An interactive, dynamic world map application displaying the locations, activiti
 - **Detailed popup panels** - Click any marker for full foundry profile
 - **Comparison mode** - Compare multiple foundries side-by-side
 
+![Data Window](assets/Data_Window.png)
+
 ## Installation
 
 ### Prerequisites
