@@ -1,7 +1,7 @@
 # Integrated Optical Foundries 2026 - Interactive World Map
 
 An interactive, dynamic world map application displaying the locations, activities, and capabilities of Integrated Optical Foundries in 2026.
-![Main Web](Main_Web.png)
+![Main Web](assets/Main_Web.png)
 
 ## Features
 
