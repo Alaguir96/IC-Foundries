@@ -5,9 +5,11 @@ Interactive World Map of Integrated Optical Foundries 2026
 
 import dash
 from dash import html, dcc, Input, Output, State, callback_context, dash_table, no_update
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import pandas as pd
 import json
+from datetime import datetime
 from typing import List, Dict
 
 # Import custom modules
@@ -18,6 +20,7 @@ from ui_components import (
     create_sidebar, create_foundry_popup, create_comparison_panel,
     create_main_layout, create_stats_display
 )
+from pdf_report import build_foundries_pdf
 
 # Initialize Dash app
 app = dash.Dash(
@@ -630,6 +633,7 @@ app.layout = html.Div([
     dcc.Store(id='full-data', data=df.to_dict('records')),
     dcc.Store(id='selected-foundries-store', data=[]),
     dcc.Store(id='filtered-data', data=df.to_dict('records')),
+    dcc.Download(id='download-foundries-pdf'),
     
     # Header
     html.Div([
@@ -909,19 +913,18 @@ def toggle_sidebar(burger_clicks, overlay_clicks, current_class):
 
 
 @app.callback(
-    Output('export-btn', 'n_clicks'),
+    Output('download-foundries-pdf', 'data'),
     Input('export-btn', 'n_clicks'),
     State('filtered-data', 'data'),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
-def export_to_csv(n_clicks, filtered_data):
-    """Export filtered data to CSV."""
-    if n_clicks and filtered_data:
-        df = pd.DataFrame(filtered_data)
-        filename = 'foundries_export.csv'
-        df.to_csv(filename, index=False)
-        print(f"Exported {len(df)} foundries to {filename}")
-    return 0
+def download_filtered_pdf(n_clicks, filtered_data):
+    """Download a PDF of the foundries in the current view."""
+    if not n_clicks:
+        raise PreventUpdate
+    pdf_bytes = build_foundries_pdf(filtered_data or [])
+    filename = f"PIXSpain_foundries_{datetime.now():%Y%m%d}.pdf"
+    return dcc.send_bytes(lambda buffer: buffer.write(pdf_bytes), filename)
 
 
 if __name__ == '__main__':
