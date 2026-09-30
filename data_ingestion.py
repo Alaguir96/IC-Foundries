@@ -533,8 +533,23 @@ def load_foundry_data() -> pd.DataFrame:
         return ', '.join(apps)
     
     df['applications'] = df.apply(get_applications, axis=1)
+    df = _collapse_duplicate_columns(df)
     
     return df
+
+
+def _collapse_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Keep one column per name so price and lead time survive export to the app."""
+    if not df.columns.duplicated().any():
+        return df
+    collapsed = {}
+    for name in list(dict.fromkeys(df.columns)):
+        block = df.loc[:, df.columns == name]
+        if block.shape[1] == 1:
+            collapsed[name] = block.iloc[:, 0]
+        else:
+            collapsed[name] = block.bfill(axis=1).iloc[:, 0]
+    return pd.DataFrame(collapsed)
 
 
 def save_data_to_json(df: pd.DataFrame, filepath: str = 'foundry_data.json'):

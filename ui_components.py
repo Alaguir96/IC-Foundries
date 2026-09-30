@@ -49,7 +49,7 @@ def create_sidebar(df: pd.DataFrame) -> html.Div:
                 type='text',
                 placeholder='Search by foundry name…',
                 className='search-input',
-                debounce=True,
+                debounce=300,
             ),
         ], className="filter-section"),
 

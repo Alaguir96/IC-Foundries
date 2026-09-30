@@ -18,7 +18,7 @@ from geocoding import geocode_dataframe
 from map_view import create_scatter_map, create_heatmap
 from ui_components import (
     create_sidebar, create_foundry_popup, create_comparison_panel,
-    create_main_layout, create_stats_display
+    create_main_layout, create_stats_display, _friendly_tech_label
 )
 from pdf_report import build_foundries_pdf
 
@@ -699,6 +699,80 @@ app.layout = html.Div([
 
 
 # Callbacks
+def apply_foundry_filters(records, search, countries, techs, types, applications,
+                          price_range, max_lead_time):
+    """Return the foundries matching the controls currently set in the sidebar."""
+    frame = pd.DataFrame(records if records is not None else [])
+    if frame.empty:
+        return frame
+
+    query = str(search).strip() if search else ""
+    if query and 'foundry' in frame.columns:
+        frame = frame[frame['foundry'].astype(str).str.contains(query, case=False, na=False)]
+
+    if countries and 'country' in frame.columns:
+        frame = frame[frame['country'].isin(countries)]
+
+    if techs and 'tech_category' in frame.columns:
+        frame = frame[frame['tech_category'].isin(techs)]
+
+    if types is not None and 'type' in frame.columns:
+        frame = frame[frame['type'].isin(types)] if types else frame.iloc[0:0]
+
+    if applications is not None and 'applications' in frame.columns:
+        if not applications:
+            frame = frame.iloc[0:0]
+        else:
+            frame = frame[frame['applications'].apply(
+                lambda value: any(app in str(value) for app in applications)
+            )]
+
+    if (
+        price_range and len(price_range) == 2 and 'mpw_price_usd' in frame.columns
+        and (price_range[0] > 0 or price_range[1] < 50000)
+    ):
+        prices = pd.to_numeric(frame['mpw_price_usd'], errors='coerce')
+        frame = frame[(prices >= price_range[0]) & (prices <= price_range[1])]
+
+    if (
+        max_lead_time is not None and max_lead_time < 30
+        and 'lead_time_weeks' in frame.columns
+    ):
+        weeks = pd.to_numeric(frame['lead_time_weeks'], errors='coerce')
+        frame = frame[weeks <= max_lead_time]
+
+    return frame
+
+
+def describe_active_filters(records, search, countries, techs, types, applications,
+                            price_range, max_lead_time):
+    """Short labels for the filters that actually narrow the PDF."""
+    frame = pd.DataFrame(records if records is not None else [])
+    labels = []
+    query = str(search).strip() if search else ""
+    if query:
+        labels.append(f"Search: {query}")
+    if countries:
+        labels.append("Location: " + ", ".join(countries))
+    if techs:
+        labels.append("Technology: " + ", ".join(_friendly_tech_label(tech) for tech in techs))
+    if types is not None and 'type' in frame.columns:
+        all_types = set(frame['type'].dropna().astype(str))
+        if set(types) != all_types:
+            labels.append("Maturity: " + (", ".join(types) if types else "none"))
+    if applications is not None and 'applications' in frame.columns:
+        all_apps = set()
+        for value in frame['applications'].dropna().astype(str):
+            all_apps.update(part.strip() for part in value.split(',') if part.strip())
+        if set(applications) != all_apps:
+            labels.append("Applications: " + (", ".join(applications) if applications else "none"))
+    if price_range and len(price_range) == 2 and (price_range[0] > 0 or price_range[1] < 50000):
+        labels.append(f"Budget: ${price_range[0]:,.0f}–${price_range[1]:,.0f}")
+    if max_lead_time is not None and max_lead_time < 30:
+        labels.append(f"Lead time: up to {int(max_lead_time)} weeks")
+    return labels
+
+
 @app.callback(
     [Output('world-map', 'figure'),
      Output('filtered-data', 'data'),
@@ -718,46 +792,9 @@ app.layout = html.Div([
 def update_map(search, countries, techs, types, applications, price_range, max_lead_time, 
                color_by, size_by, heatmap, full_data):
     """Update map based on filters."""
-    df_filtered = pd.DataFrame(full_data)
-    
-    # Apply filters
-    if search:
-        mask = df_filtered['foundry'].str.contains(search, case=False, na=False)
-        df_filtered = df_filtered[mask]
-    
-    if countries:
-        df_filtered = df_filtered[df_filtered['country'].isin(countries)]
-    
-    if techs:
-        df_filtered = df_filtered[df_filtered['tech_category'].isin(techs)]
-    
-    if types:
-        df_filtered = df_filtered[df_filtered['type'].isin(types)]
-    
-    if applications:
-        app_mask = df_filtered['applications'].apply(
-            lambda x: any(app in str(x) for app in applications)
-        )
-        df_filtered = df_filtered[app_mask]
-    
-    # Apply price range filter
-    if price_range and len(price_range) == 2:
-        price_min, price_max = price_range
-        if 'mpw_price_usd' in df_filtered.columns:
-            price_mask = (
-                (df_filtered['mpw_price_usd'] >= price_min) & 
-                (df_filtered['mpw_price_usd'] <= price_max)
-            ) | df_filtered['mpw_price_usd'].isna()
-            df_filtered = df_filtered[price_mask]
-    
-    # Apply lead time filter
-    if max_lead_time and max_lead_time < 30:
-        if 'lead_time_weeks' in df_filtered.columns:
-            lead_time_mask = (
-                (df_filtered['lead_time_weeks'] <= max_lead_time) |
-                df_filtered['lead_time_weeks'].isna()
-            )
-            df_filtered = df_filtered[lead_time_mask]
+    df_filtered = apply_foundry_filters(
+        full_data, search, countries, techs, types, applications, price_range, max_lead_time
+    )
     
     # Create map
     fig = create_scatter_map(df_filtered, color_by=color_by, size_by=size_by)
@@ -915,14 +952,31 @@ def toggle_sidebar(burger_clicks, overlay_clicks, current_class):
 @app.callback(
     Output('download-foundries-pdf', 'data'),
     Input('export-btn', 'n_clicks'),
-    State('filtered-data', 'data'),
+    State('full-data', 'data'),
+    State('search-input', 'value'),
+    State('country-filter', 'value'),
+    State('tech-filter', 'value'),
+    State('type-filter', 'value'),
+    State('application-filter', 'value'),
+    State('price-range-filter', 'value'),
+    State('lead-time-filter', 'value'),
     prevent_initial_call=True,
 )
-def download_filtered_pdf(n_clicks, filtered_data):
-    """Download a PDF of the foundries in the current view."""
+def download_filtered_pdf(n_clicks, full_data, search, countries, techs, types,
+                          applications, price_range, max_lead_time):
+    """Download a PDF of the foundries matching the sidebar filters."""
     if not n_clicks:
         raise PreventUpdate
-    pdf_bytes = build_foundries_pdf(filtered_data or [])
+    filtered = apply_foundry_filters(
+        full_data, search, countries, techs, types, applications, price_range, max_lead_time
+    )
+    active_filters = describe_active_filters(
+        full_data, search, countries, techs, types, applications, price_range, max_lead_time
+    )
+    pdf_bytes = build_foundries_pdf(
+        filtered.to_dict('records'),
+        active_filters=active_filters,
+    )
     filename = f"PIXSpain_foundries_{datetime.now():%Y%m%d}.pdf"
     return dcc.send_bytes(lambda buffer: buffer.write(pdf_bytes), filename)
 

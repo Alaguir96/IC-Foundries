@@ -55,7 +55,7 @@ TECH_LABELS = {
 }
 
 
-def build_foundries_pdf(records) -> bytes:
+def build_foundries_pdf(records, active_filters=None) -> bytes:
     """Return a PDF of the filtered foundry records."""
     rows = _prepare_rows(records or [])
     generated = datetime.now()
@@ -106,7 +106,9 @@ def build_foundries_pdf(records) -> bytes:
 
     styles = _styles()
     story = [NextPageTemplate("Later")]
-    story.extend(_summary_block(rows, generated, reference, styles, frame_width))
+    story.extend(_summary_block(
+        rows, generated, reference, styles, frame_width, active_filters
+    ))
     if rows:
         for index, row in enumerate(rows, start=1):
             story.append(Spacer(1, 3.2 * mm))
@@ -131,7 +133,7 @@ def _prepare_rows(records):
     return rows
 
 
-def _summary_block(rows, generated, reference, styles, width):
+def _summary_block(rows, generated, reference, styles, width, active_filters=None):
     countries = sorted({_text(row.get("country"), "") for row in rows if _text(row.get("country"), "")})
     commercial = sum(1 for row in rows if _text(row.get("type")) == "Commercial")
     count = len(rows)
@@ -152,6 +154,14 @@ def _summary_block(rows, generated, reference, styles, width):
 
     intro = [
         Paragraph(lead, styles["body"]),
+    ]
+    if active_filters:
+        intro.append(Spacer(1, 1.6 * mm))
+        intro.append(Paragraph(
+            "Filters · " + " · ".join(_esc(item) for item in active_filters),
+            styles["meta"],
+        ))
+    intro.extend([
         Spacer(1, 2 * mm),
         Paragraph(
             "Indicative figures may vary by run and design. This extract is not a "
@@ -159,7 +169,7 @@ def _summary_block(rows, generated, reference, styles, width):
             "to confirm availability, schedule, and pricing.",
             styles["disclaimer"],
         ),
-    ]
+    ])
     if count:
         intro.append(Spacer(1, 3.5 * mm))
         stats = Table(
